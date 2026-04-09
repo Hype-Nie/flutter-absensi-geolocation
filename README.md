@@ -1,6 +1,6 @@
 # 📱 Flutter Absensi GPS
 
-Aplikasi mobile untuk sistem absensi karyawan berbasis foto selfie dan GPS menggunakan Flutter dan GetX.
+Aplikasi mobile untuk sistem absensi karyawan berbasis GPS menggunakan Flutter dan GetX.
 
 ![Flutter](https://img.shields.io/badge/Flutter-3.10.8-blue)
 ![Dart](https://img.shields.io/badge/Dart-3.0-blue)
@@ -23,18 +23,17 @@ Aplikasi mobile untuk sistem absensi karyawan berbasis foto selfie dan GPS mengg
 ### 👤 Untuk Karyawan
 - ✅ Login dengan email dan password
 - ✅ Dashboard dengan informasi absensi
-- 📸 Absensi dengan foto selfie (Coming Soon)
-- 📍 Verifikasi lokasi dengan GPS (Coming Soon)
-- 📋 Riwayat absensi (Coming Soon)
-- 👤 Manajemen profil (Coming Soon)
+- 📍 Verifikasi lokasi dengan GPS
+- 📋 Riwayat absensi
+- 👤 Manajemen profil
 
 ### 👨‍💼 Untuk Admin
 - ✅ Login sebagai admin
 - 📊 Dashboard dengan statistik absensi
-- 👥 Kelola data karyawan (Coming Soon)
-- 📋 Monitor absensi karyawan (Coming Soon)
-- 📈 Laporan absensi (Coming Soon)
-- ⚙️ Pengaturan sistem (Coming Soon)
+- 👥 Kelola data karyawan
+- 📋 Monitor absensi karyawan
+- 📈 Laporan absensi
+- ⚙️ Pengaturan sistem
 
 ## 📸 Screenshots
 
@@ -48,7 +47,6 @@ Aplikasi mobile untuk sistem absensi karyawan berbasis foto selfie dan GPS mengg
 - **HTTP Client**: Dio 5.4.0
 - **Local Storage**: GetStorage 2.1.1
 - **Location**: Geolocator 11.0.0
-- **Camera**: Camera 0.11.0+1
 - **UI Components**: Material Design 3
 
 ## 🚀 Getting Started
@@ -182,7 +180,7 @@ flutter build web --release
 ## 📝 TODO
 
 - [ ] Integrate with real API
-- [ ] Implement attendance feature (Camera + GPS)
+- [ ] Implement attendance feature (GPS)
 - [ ] Implement history page
 - [ ] Implement employee management
 - [ ] Implement reports
