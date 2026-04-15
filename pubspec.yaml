@@ -78,6 +78,7 @@ flutter:
   assets:
     - .env
     - assets/images/Perhutani_logo.svg
+    - assets/images/logo_baru.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

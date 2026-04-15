@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/widgets/app_footer.dart';
@@ -36,13 +35,14 @@ class LoginView extends GetView<LoginController> {
                     // Perhutani Logo
                     Center(
                       child: SizedBox(
-                        width: 120,
-                        height: 120,
-                        child: SvgPicture.asset(
-                          'assets/images/Perhutani_logo.svg',
-                          placeholderBuilder: (context) => Container(
-                            width: 120,
-                            height: 120,
+                        width: 240,
+                        height: 240,
+                        child: Image.asset(
+                          'assets/images/logo_baru.png',
+                          fit: BoxFit.contain,
+                          errorBuilder: (context, error, stackTrace) => Container(
+                            width: 240,
+                            height: 240,
                             decoration: BoxDecoration(
                               color: AppColors.border,
                               borderRadius: BorderRadius.circular(12),
@@ -58,9 +58,9 @@ class LoginView extends GetView<LoginController> {
                     ),
                     const SizedBox(height: 24),
 
-                    // "Perhutani Padangan"
+                    // "Abnsensi Karyawan"
                     const Text(
-                      'Perhutani Padangan',
+                      'Abnsensi Karyawan',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 18,

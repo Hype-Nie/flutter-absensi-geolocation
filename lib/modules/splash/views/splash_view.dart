@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import '../../../core/constants/app_colors.dart';
 import '../controllers/splash_controller.dart';
@@ -16,23 +15,21 @@ class SplashView extends GetView<SplashController> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             // Perhutani Logo
-            SizedBox(
-              width: 150,
-              height: 150,
-              child: SvgPicture.asset(
-                'assets/images/Perhutani_logo.svg',
-                placeholderBuilder: (context) => Container(
-                  width: 120,
-                  height: 120,
-                  decoration: BoxDecoration(
-                    color: AppColors.textWhite,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: const Icon(
-                    Icons.fingerprint,
-                    size: 80,
-                    color: AppColors.primary,
-                  ),
+            Container(
+              width: 170,
+              height: 170,
+              padding: const EdgeInsets.all(18),
+              decoration: const BoxDecoration(
+                color: AppColors.textWhite,
+                shape: BoxShape.circle,
+              ),
+              child: Image.asset(
+                'assets/images/logo_baru.png',
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) => const Icon(
+                  Icons.fingerprint,
+                  size: 80,
+                  color: AppColors.primary,
                 ),
               ),
             ),

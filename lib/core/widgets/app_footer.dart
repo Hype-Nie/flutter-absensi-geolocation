@@ -13,7 +13,7 @@ class AppFooter extends StatelessWidget {
       width: double.infinity,
       alignment: Alignment.center,
       child: const Text(
-        '@2026 Perhutani Padangan',
+        '@2026 Absensi Karyawan',
         style: TextStyle(
           fontSize: 12,
           color: Color(0xFF6B7280), // grey-600
