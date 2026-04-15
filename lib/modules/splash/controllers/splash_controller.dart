@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import '../../../data/services/storage_service.dart';
 import '../../../routes/app_routes.dart';
@@ -5,11 +8,23 @@ import '../../../core/utils/logger.dart';
 
 class SplashController extends GetxController {
   StorageService? _storageService;
+  bool _hasNavigated = false;
 
   @override
   void onInit() {
     super.onInit();
     AppLogger.info('SplashController: onInit() called');
+
+    // Absolute safety timeout — if for ANY reason the normal flow
+    // takes longer than 10 seconds, force-navigate to login.
+    // This prevents the app from being stuck forever in release mode.
+    Future.delayed(const Duration(seconds: 10), () {
+      if (!_hasNavigated) {
+        debugPrint('SplashController: Safety timeout reached — forcing navigation to login');
+        _navigateTo(AppRoutes.login);
+      }
+    });
+
     _initializeAndNavigate();
   }
 
@@ -17,6 +32,14 @@ class SplashController extends GetxController {
   void onReady() {
     super.onReady();
     AppLogger.info('SplashController: onReady() called');
+  }
+
+  /// Safe navigation helper — ensures we only navigate once.
+  void _navigateTo(String route) {
+    if (_hasNavigated) return;
+    _hasNavigated = true;
+    AppLogger.info('SplashController: Navigating to $route');
+    Get.offAllNamed(route);
   }
 
   Future<void> _initializeAndNavigate() async {
@@ -48,8 +71,7 @@ class SplashController extends GetxController {
         e,
         stackTrace,
       );
-      // If error occurs, navigate to login as fallback
-      Get.offAllNamed(AppRoutes.login);
+      _navigateTo(AppRoutes.login);
     }
   }
 
@@ -59,7 +81,7 @@ class SplashController extends GetxController {
 
       if (_storageService == null) {
         AppLogger.error('SplashController: StorageService is null', null, null);
-        Get.offAllNamed(AppRoutes.login);
+        _navigateTo(AppRoutes.login);
         return;
       }
 
@@ -77,18 +99,12 @@ class SplashController extends GetxController {
         AppLogger.info('SplashController: User role=$role, navigating...');
 
         if (role == 'admin') {
-          AppLogger.info('SplashController: Navigating to admin dashboard');
-          Get.offAllNamed(AppRoutes.adminDashboard);
+          _navigateTo(AppRoutes.adminDashboard);
         } else {
-          AppLogger.info('SplashController: Navigating to employee dashboard');
-          Get.offAllNamed(AppRoutes.employeeDashboard);
+          _navigateTo(AppRoutes.employeeDashboard);
         }
       } else {
-        // Navigate to login
-        AppLogger.info(
-          'SplashController: Not logged in, navigating to login...',
-        );
-        Get.offAllNamed(AppRoutes.login);
+        _navigateTo(AppRoutes.login);
       }
     } catch (e, stackTrace) {
       AppLogger.error(
@@ -96,9 +112,7 @@ class SplashController extends GetxController {
         e,
         stackTrace,
       );
-      // Navigate to login as fallback
-      AppLogger.info('SplashController: Fallback - Navigating to login');
-      Get.offAllNamed(AppRoutes.login);
+      _navigateTo(AppRoutes.login);
     }
   }
 }

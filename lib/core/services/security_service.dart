@@ -35,9 +35,17 @@ class SecurityService {
       }
 
       AppLogger.info('SecurityService: Fetching NTP time...');
+      // Outer timeout in case the NTP library's own timeout doesn't fire
+      // (e.g. DNS hangs, socket never opens in release mode)
       final ntpTime = await NTP.now(
         lookUpAddress: 'pool.ntp.org',
         timeout: const Duration(seconds: 5),
+      ).timeout(
+        const Duration(seconds: 8),
+        onTimeout: () {
+          AppLogger.warning('SecurityService: NTP outer timeout, using device time');
+          return DateTime.now();
+        },
       );
 
       _cachedNetworkTime = ntpTime;
@@ -145,9 +153,27 @@ class SecurityService {
   /// Check if device is rooted (Android) or jailbroken (iOS)
   Future<bool> isRootedOrJailbroken() async {
     try {
-      final isJailBroken = await JailbreakRootDetection.instance.isJailBroken;
-      final isNotTrust = await JailbreakRootDetection.instance.isNotTrust;
-      final isRealDevice = await JailbreakRootDetection.instance.isRealDevice;
+      // Wrap in a timeout — the jailbreak_root_detection plugin can
+      // hang indefinitely on some devices in release mode after R8
+      // minification strips reflection-based code.
+      final result = await Future.wait([
+        JailbreakRootDetection.instance.isJailBroken.timeout(
+          const Duration(seconds: 3),
+          onTimeout: () => false,
+        ),
+        JailbreakRootDetection.instance.isNotTrust.timeout(
+          const Duration(seconds: 3),
+          onTimeout: () => false,
+        ),
+        JailbreakRootDetection.instance.isRealDevice.timeout(
+          const Duration(seconds: 3),
+          onTimeout: () => true, // assume real device on timeout
+        ),
+      ]);
+
+      final isJailBroken = result[0];
+      final isNotTrust = result[1];
+      final isRealDevice = result[2];
 
       final isDetected = !isRealDevice || isJailBroken || isNotTrust;
 

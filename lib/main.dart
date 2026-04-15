@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -19,67 +21,91 @@ import 'data/providers/api_provider.dart';
 import 'routes/app_pages.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  // Wrap entire main in runZonedGuarded so uncaught async errors
+  // don't silently kill the app in release mode.
+  runZonedGuarded(() async {
+    WidgetsFlutterBinding.ensureInitialized();
 
-  AppLogger.info('App: Initializing...');
+    // ---- Safe initialization (each step wrapped in try-catch) ----
 
-  // Load .env file
-  await dotenv.load(fileName: '.env');
-  AppLogger.info('App: .env file loaded');
+    // 1. Load .env file
+    try {
+      await dotenv.load(fileName: '.env');
+      AppLogger.info('App: .env file loaded');
+    } catch (e) {
+      // In release mode the .env asset path can differ;
+      // fall back so the app still boots with the hardcoded default URL.
+      debugPrint('App: Failed to load .env – $e');
+    }
 
-  // Initialize date formatting for Indonesian locale
-  await initializeDateFormatting('id_ID');
-  AppLogger.info('App: Date formatting initialized');
+    // 2. Initialize date formatting
+    try {
+      await initializeDateFormatting('id_ID');
+    } catch (e) {
+      debugPrint('App: Date formatting init failed – $e');
+    }
 
-  // Initialize GetStorage
-  await GetStorage.init();
-  AppLogger.info('App: GetStorage initialized');
+    // 3. Initialize GetStorage
+    try {
+      await GetStorage.init();
+    } catch (e) {
+      debugPrint('App: GetStorage init failed – $e');
+    }
 
-  // Initialize services
-  await _initServices();
-  AppLogger.info('App: Services initialized');
+    // 4. Initialize services
+    try {
+      await _initServices();
+    } catch (e, stackTrace) {
+      debugPrint('App: Service init failed – $e\n$stackTrace');
+    }
 
-  // Set preferred orientations
-  await SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown,
-  ]);
+    // 5. Set preferred orientations
+    try {
+      await SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+        DeviceOrientation.portraitDown,
+      ]);
+    } catch (_) {}
 
-  runApp(const MyApp());
+    // ---- Always run the app, even if init partially failed ----
+    runApp(const MyApp());
 
-  // Configure EasyLoading
-  _configureEasyLoading();
+    // Configure EasyLoading (post-frame)
+    _configureEasyLoading();
+  }, (error, stack) {
+    // Global fallback – prevents silent crashes in release builds.
+    debugPrint('App: Uncaught error – $error\n$stack');
+  });
 }
 
 Future<void> _initServices() async {
-  try {
-    // Initialize core services
-    AppLogger.info('App: Initializing StorageService...');
-    Get.put(StorageService());
+  // Initialize core services – order matters (dependencies first)
+  AppLogger.info('App: Initializing StorageService...');
+  Get.put(StorageService());
 
-    AppLogger.info('App: Initializing LocationService...');
-    Get.put(LocationService());
+  AppLogger.info('App: Initializing LocationService...');
+  Get.put(LocationService());
 
-    AppLogger.info('App: Initializing ApiProvider...');
-    Get.put(ApiProvider());
+  AppLogger.info('App: Initializing ApiProvider...');
+  Get.put(ApiProvider());
 
-    AppLogger.info('App: Initializing AuthService...');
-    Get.put(AuthService());
+  AppLogger.info('App: Initializing AuthService...');
+  Get.put(AuthService());
 
-    AppLogger.info('App: Initializing EmployeeService...');
-    Get.put(EmployeeService());
+  AppLogger.info('App: Initializing EmployeeService...');
+  Get.put(EmployeeService());
 
-    AppLogger.info('App: Initializing AttendanceService...');
-    Get.put(AttendanceService(Get.find<ApiProvider>()));
+  AppLogger.info('App: Initializing AttendanceService...');
+  Get.put(AttendanceService(Get.find<ApiProvider>()));
 
-    AppLogger.info('App: Initializing SecurityService...');
-    Get.put(SecurityService.instance);
+  // SecurityService is deferred – it calls native code
+  // (jailbreak_root_detection, device_info_plus) that can
+  // crash / hang on some devices in release mode.
+  // We register it lazily so it doesn't block startup.
+  AppLogger.info('App: Registering SecurityService (lazy)...');
+  Get.lazyPut(() => SecurityService.instance);
 
-    AppLogger.info('App: All services initialized successfully');
-  } catch (e, stackTrace) {
-    AppLogger.error('App: Error initializing services', e, stackTrace);
-    rethrow;
-  }
+  AppLogger.info('App: All services initialised successfully');
 }
 
 void _configureEasyLoading() {
